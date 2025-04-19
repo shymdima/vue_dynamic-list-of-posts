@@ -1,13 +1,9 @@
-import { client } from "./api";
+import { client } from "../utils/httpClient";
 
-export const getComments = (postId) => {
-  return client.get(`/comments?postId=${postId}`);
-};
+export const getCommentsByPostId = (postId) => client.get(`/comments`, {
+  params: { postId },
+});
 
-export const addComment = (data) => {
-  return client.post("/comments", data);
-};
+export const addComment = (comment) => client.post(`/comments`, comment);
 
-export const deleteComment = (commentId) => {
-  return client.delete(`/comments/${commentId}`);
-};
+export const deleteComment = (commentId) => client.delete(`/comments/${commentId}`);

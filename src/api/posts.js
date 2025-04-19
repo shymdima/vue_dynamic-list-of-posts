@@ -1,20 +1,11 @@
-import { client } from "./api";
+import { client } from "../utils/httpClient";
 
-export const getPosts = () => {
-  return client.get(`/posts?userId=1416`);
-};
+export const getPostsByUserId = (userId) => client.get(`/posts`, {
+  params: { userId },
+});
 
-export const addPost = (data) => {
-  return client.post("/posts", data);
-};
+export const addPost = (post) => client.post(`/posts`, post);
 
-export const deletePost = (postId) => {
-  return client.delete(`/posts/${postId}`);
-};
+export const updatePost = (postId, updatedPost) => client.patch(`/posts/${postId}`, updatedPost);
 
-export const updatePost = ({ postId, title, body }) => {
-  return client.patch(`/posts/${postId}`, {
-    title,
-    body,
-  });
-};
+export const deletePost = (postId) => client.delete(`/posts/${postId}`);

@@ -1,89 +1,119 @@
 <script>
-import { addComment, deleteComment, getComments } from '../api/comments';
-import Comment from './comment.vue';
 import CommentForm from './CommentForm.vue';
-import ErrorMessage from './ErrorMessage.vue';
+import Comment from './Comment.vue';
 import Loader from './Loader.vue';
-import PostForm from './postForm.vue';
-
+import { getCommentsByPostId, addComment, deleteComment } from '../api/comments';
 export default {
-  name: 'postPreview',
-  components: {
-    Comment,
-    CommentForm,
-    PostForm,
-    Loader,
-    ErrorMessage,
+  name: 'PostPreview',
+  components: { CommentForm, Comment, Loader },
+  props: { 
+    post: {
+      type: Object,
+      required: true,
+    },
   },
+  emits: ['deletePost', 'editPost'],
   data() {
     return {
+      showCommentForm: false,
       comments: [],
-      commentForm: false,
       loading: false,
-      errorMessage: false,
-    }
+    };
   },
-  props: {
-    post: {},
-  },
-  emits: ['deletePost', 'handleEditing'],
   mounted() {
-    this.loading = true;
-    getComments(this.post.id).then(({ data }) => { this.comments = data }).catch(() => this.errorMessage = true).finally(() => this.loading = false);
-  },
-  methods: {
-    addComment({ name, email, body }) {
-      this.loading = true;
-      const postId = this.post.id;
-      addComment({ postId, name, email, body }).then(({ data }) => this.comments.push(data)).finally(() => this.loading = false)
-    },
-    deleteComment(commentId) {
-      deleteComment(commentId).then(this.comments = this.comments.filter(comment => comment.id !== commentId))
-    }
+    this.fetchComments();
   },
   watch: {
-    post(newPost, oldPost) {
-      if (newPost !== oldPost) {
+    'post.id': {
+      handler: 'fetchComments',
+      immediate: true,
+    },
+  },
+  methods: {
+    async fetchComments() {
+      if (!this.post.id) return; // Ensure postId is present before fetching
+      try {
         this.loading = true;
-        getComments(this.post.id).then(({ data }) => { this.comments = data }).finally(() => this.loading = false);
+        const res = await getCommentsByPostId(this.post.id);
+        this.comments = res.data;
+      } catch (error) {
+        console.error('Failed to load comments:', error);
+      } finally {
+        this.loading = false;
       }
     },
-  }
-}
+    async handleCreateComment(commentData) {
+      try {
+        const res = await addComment({ ...commentData, postId: this.post.id });
+        this.comments.push(res.data);
+        this.toggleCommentForm();
+      } catch (error) {
+        console.error('Failed to add comment:', error);
+      }
+    },
+    async handleDeleteComment(commentId) {
+      const index = this.comments.findIndex(comment => comment.id === commentId);
+      if (index === -1) return;
+      const [removedComment] = this.comments.splice(index, 1);
+      try {
+        await deleteComment(commentId);
+      } catch (error) {
+        this.comments.splice(index, 0, removedComment); // Revert on failure
+        console.error('Failed to delete comment:', error);
+      }
+    },
+    toggleCommentForm() {
+      this.showCommentForm = !this.showCommentForm;
+    },
+  },
+};
 </script>
 
 <template>
-  <div class="tile is-parent is-8-desktop Sidebar--open">
-    <div class="tile is-child box is-success">
-      <div class="content">
-        <div className="block">
-          <div className="is-flex is-justify-content-space-between is-align-items-center">
-            <h2>#{{ post.id }}: {{ post.title }}</h2>
-            <div className="is-flex">
-              <span className="icon is-small is-right is-clickable" @click="$emit('handleEditing')">
-                <i className="fas fa-pen-to-square"></i>
-              </span>
-              <span className="icon is-small is-right has-text-danger is-clickable ml-3"
-                @click="$emit('deletePost', post.id)">
-                <i className="fas fa-trash"></i>
-              </span>
-            </div>
-          </div>
-          <p data-cy="PostBody">{{ post.body }}</p>
-        </div>
-        <div className="block" v-if="!commentForm">
-          <Loader v-if="loading" />
-          <ErrorMessage v-if="errorMessage" :props="'comments'" @close="errorMessage = false"/>
-          <Comment v-else v-for="comment of comments" :comment="comment" :key="comment.id" @deleteComment="deleteComment" />
-          <div className="block" v-if="comments.length === 0 && !loading">
-            <p className="title is-4">No comments yet</p>
-          </div>
-          <button type="button" className="button is-link" @click="commentForm = true">Write a comment</button>
-        </div>
-        <div className="block" v-if="commentForm">
-          <CommentForm @close="commentForm = false" @addComment="addComment" :loading="loading" />
-        </div>
+  <div class="block">
+    <div class="is-flex is-justify-content-space-between is-align-items-center">
+      <h2>#{{ post.id }}: {{ post.title }}</h2>
+      <div class="is-flex">
+        <span class="icon is-small is-clickable" @click="$emit('editPost')">
+          <i class="fas fa-pen-to-square"></i>
+        </span>
+        <span
+          class="icon is-small has-text-danger is-clickable ml-3"
+          @click="$emit('deletePost', post.id)"
+        >
+          <i class="fas fa-trash"></i>
+        </span>
       </div>
     </div>
+
+    <p data-cy="PostBody">{{ post.body }}</p>
+
+    <div v-if="loading" class="is-flex is-justify-content-center">
+      <Loader />
+    </div>
+
+    <template v-else>
+      <div v-if="comments.length">
+        <Comment
+          v-for="comment in comments"
+          :key="comment.id"
+          :comment="comment"
+          @remove-comment="handleDeleteComment"
+        />
+      </div>
+      <div class="block">
+        <p v-if="!comments.length" class="title is-4">No comments yet</p>
+        <button class="button is-link" @click="toggleCommentForm">
+          {{ showCommentForm ? 'Cancel' : 'Write a comment' }}
+        </button>
+      </div>
+
+      <CommentForm
+        v-if="showCommentForm"
+        :postId="post.id"
+        @toggle-form="toggleCommentForm"
+        @create-comment="handleCreateComment"
+      />
+    </template>
   </div>
 </template>

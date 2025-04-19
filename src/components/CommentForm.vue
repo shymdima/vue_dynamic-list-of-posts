@@ -1,118 +1,135 @@
 <script>
 export default {
   name: 'CommentForm',
+  props: {
+    postId: {
+      type: Number,
+      required: true,
+    },
+  },
+  emits: ['toggleForm', 'createComment'],
   data() {
     return {
       name: '',
       email: '',
       body: '',
-      nameError: false,
-      emailError: false,
-      bodyError: false,
-    }
+      nameError: '',
+      emailError: '',
+      bodyError: '',
+    };
   },
-  props: {
-    loading: Boolean,
-  },
-  emits: ['close', 'addComment'],
   methods: {
-    handleAddButton() {
+    validateForm() {
+      let isError = false;
+      this.clearErrors();
       if (!this.name) {
-        this.nameError = true;
+        this.nameError = 'Name is required';
+        isError = true;
       }
-      const name = this.name;   
-      if (!this.email || !this.email.includes('@')) {
-        this.emailError = true;
+      if (!this.email) {
+        this.emailError = 'Email is required';
+        isError = true;
+      } else if (!/\S+@\S+\.\S+/.test(this.email)) {
+        this.emailError = 'Invalid email format';
+        isError = true;
       }
-      const email = this.email;
       if (!this.body) {
-        this.bodyError = true;
+        this.bodyError = 'Body is required';
+        isError = true;
       }
-      const body = this.body;
-
-      if (this.nameError || this.emailError || this.bodyError) {
-        return;
+      return isError;
+    },
+    addComment() {
+      if (!this.validateForm()) {
+        this.$emit('createComment', { name: this.name, email: this.email, body: this.body });
+        this.clear();
       }
-      this.$emit('addComment', { name, email, body })
+    },
+    clear() {
+      this.name = '';
+      this.email = '';
       this.body = '';
-    }
+      this.clearErrors();
+      this.$emit('toggleForm');
+    },
+    clearErrors() {
+      this.nameError = '';
+      this.emailError = '';
+      this.bodyError = '';
+    },
   },
-  watch: {
-    name(newName, oldName) {
-      if(newName !== oldName) {
-        this.nameError = false;
-      }
-    },
-    email(newEmail, oldEmail) {
-      if(newEmail !== oldEmail) {
-        this.emailError = false;
-      }
-    },
-    body(newBody, oldBody) {
-      if(newBody !== oldBody) {
-        this.bodyError = false;
-      }
-    }
-  }
-}
+};
 </script>
 
 <template>
-  <div className="field" data-cy="NameField">
-    <label className="label" htmlFor="{`comment-author-name-${name}`}">
-      Author Name
-    </label>
-    <div className="control has-icons-left has-icons-right">
-      <input type="text" :name="name" id="'{`comment-author-name-${name}`}" placeholder="Name Surname" class="input"
-        :class="{ 'is-danger': nameError }" v-model.trim="name" />
-      <span className="icon is-small is-left">
-        <i className="fas fa-user"></i>
-      </span>
-
-      <span className="icon is-small is-right has-text-danger" data-cy="ErrorIcon" v-if="nameError">
-        <i className="fas fa-exclamation-triangle"></i>
-      </span>
+  <form @submit.prevent="addComment">
+    <div class="field" data-cy="NameField">
+      <label class="label" :for="`comment-author-name`">
+        Author Name
+      </label>
+      <div class="control has-icons-left has-icons-right">
+        <input 
+          type="text" 
+          :id="`comment-author-name`" 
+          placeholder="Your Name"
+          :class="{'is-danger': nameError}"
+          class="input" 
+          v-model="name" 
+        />
+        <span class="icon is-small is-left">
+          <i class="fas fa-user"></i>
+        </span>
+        <span v-if="nameError" class="icon is-small is-right has-text-danger" data-cy="ErrorIcon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </span>
+      </div>
+      <p v-if="nameError" class="help is-danger" data-cy="ErrorMessage">{{ nameError }}</p>
     </div>
 
-    <p className="help is-danger" data-cy="ErrorMessage" v-if="nameError">Name is required</p>
-  </div>
-
-  <div className="field" data-cy="NameField">
-    <label className="label" htmlFor="{`comment-author-email-${email}`}">
-      Author Email
-    </label>
-    <div className="control has-icons-left has-icons-right">
-      <input type="email" name="{email}" id="{`comment-author-email-${email`}" placeholder="Your email" class="input"
-        :class="{ 'is-danger': emailError }" v-model.trim="email" />
-      <span className="icon is-small is-left">
-        <i className="fas fa-user fa-envelope"></i>
-      </span>
-
-      <span className="icon is-small is-right has-text-danger" data-cy="ErrorIcon" v-if="emailError">
-        <i className="fas fa-exclamation-triangle"></i>
-      </span>
+    <div class="field" data-cy="EmailField">
+      <label class="label" :for="`comment-author-email`">
+        Author Email
+      </label>
+      <div class="control has-icons-left has-icons-right">
+        <input 
+          type="email" 
+          :id="`comment-author-email`" 
+          placeholder="Your Email"
+          :class="{'is-danger': emailError}"
+          class="input" 
+          v-model="email" 
+        />
+        <span class="icon is-small is-left">
+          <i class="fas fa-envelope"></i>
+        </span>
+        <span v-if="emailError" class="icon is-small is-right has-text-danger" data-cy="ErrorIcon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </span>
+      </div>
+      <p v-if="emailError" class="help is-danger" data-cy="ErrorMessage">{{ emailError }}</p>
     </div>
 
-    <p className="help is-danger" data-cy="ErrorMessage" v-if="emailError">Email is required</p>
-  </div>
+    <div class="field" data-cy="BodyField">
+      <label class="label" :for="`comment-body`">Write Comment</label>
+      <div class="control">
+        <textarea 
+          :id="`comment-body`" 
+          placeholder="Comment" 
+          :class="{'is-danger': bodyError}"
+          class="textarea"
+          v-model="body"
+        ></textarea>
+      </div>
+      <p v-if="bodyError" class="help is-danger" data-cy="ErrorMessage">{{ bodyError }}</p>
+    </div>
 
-  <div class="field" data-cy="BodyField">
-    <label class="label" for="comment-body">Write Comment Body</label>
-    <div class="control">
-      <textarea id="comment-body" name="body" placeholder="Post body" class="textarea"
-        :class="{ 'is-danger': bodyError }" v-model.trim="body"></textarea>
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Save</button>
+      </div>
+      <div class="control">
+        <button type="button" class="button is-link is-light" @click="clear">Cancel</button>
+      </div>
     </div>
-    <p className="help is-danger" data-cy="ErrorMessage" v-if="bodyError">Body is required</p>
-  </div>
-
-  <div class="field is-grouped">
-    <div class="control">
-      <button type="submit" class="button is-link" :class="{ 'is-loading': loading }" @click="handleAddButton">
-        Add Comment
-      </button>
-    </div>
-    <div class="control" @click="$emit('close')">
-      <button type="reset" class="button is-link is-light">Cancel</button>
-    </div>
-  </div>
+  </form>
 </template>

@@ -1,26 +1,26 @@
 <script>
-  export default {
-    name: 'Header',
-    props: {
-      user: {},
+export default {
+  name: 'Header',
+  props: {
+    user: {
+      type: Object,
+      required: true,
     },
-    emits: ['logout']
-  }
+  },
+  emits: ['logout'],
+};
 </script>
 
 <template>
-  <nav className="navbar" role="navigation" aria-label="main navigation">
-    <div className="navbar-item">
-      <h2 className="is-size-4">Vue List Of Posts</h2>
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-item">
+      <h2 class="is-size-4">Vue List Of Posts</h2>
     </div>
-    <div className="navbar-end">
-      <div className="navbar-item">
-        <div className="buttons">
-          <div className="mr-5 mb-2">
-            <p>User: {{ user.name }}</p>
-          </div>
-
-          <a className="button is-light" @click="$emit('logout')">Logout</a>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="buttons">
+          <p v-if="user" class="mr-5 mb-2">User: {{ user.name }}</p>
+          <a class="button is-light" @click="$emit('logout')">Logout</a>
         </div>
       </div>
     </div>

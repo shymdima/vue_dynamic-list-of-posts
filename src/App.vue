@@ -1,59 +1,91 @@
 <script>
-import Header from './components/header.vue';
-import login from './components/login.vue';
-import postsList from './components/postsList.vue';
-
+import Header from "./components/Header.vue";
+import LoginForm from "./components/LoginForm.vue";
+import PostList from "./components/PostList.vue";
+import { loginUser, registerUser } from "./api/user";
 export default {
-    components: {
-        Header,
-        login,
-        postsList,
-    },
-    data() {
-        return {
-            user: {},
-            loading: false,
-            loginPage: true,
+  components: {
+    LoginForm,
+    Header,
+    PostList,
+  },
+  data() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return {
+      isAuthorized: !!user,
+      user,
+      name: '',
+      email: '',
+      isSubmitted: false,
+    };
+  },
+  methods: {
+    async handleLogin() {
+      try {
+        let userData;
+        if (this.isSubmitted && !this.isAuthorized) {
+          userData = await this.registerUser();
+        } else {
+          userData = await this.loginUser();
         }
-
-    },
-    methods: {
-        addUser($event) {
-            this.user = { ...$event[0] }
-            this.loginPage = false;
-            localStorage.setItem('user', JSON.stringify(this.user))
-        },
-        Logout() {
-            this.user = {};
-            this.loginPage = true;
-            localStorage.removeItem('user')
+        if (userData) {
+          this.setUser(userData);
         }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        this.isSubmitted = true;
+      }
     },
-    mounted() {
-        this.user = JSON.parse(localStorage.getItem('user')) || {};
-        if (this.user.id) {
-            this.loginPage = false;
-        }
+    async loginUser() {
+      const { data } = await loginUser(this.email);
+      if (data.length === 0) {
+        this.isAuthorized = false;
+        return null;
+      }
+      return data[0];
     },
-    watch: {
-        user() {
-            console.log(this.user);
-        },
-    }
-}
+    async registerUser() {
+      const { data } = await registerUser(this.email, this.name);
+      return data;
+    },
+    setUser(user) {
+      this.user = user;
+      this.isAuthorized = true;
+      localStorage.setItem('user', JSON.stringify(user));
+    },
+    changeName(value) {
+      this.name = value;
+    },
+    changeEmail(value) {
+      this.email = value;
+    },
+    logout() {
+      this.user = null;
+      this.isAuthorized = false;
+      localStorage.removeItem("user");
+    },
+  },
+};
 </script>
 
 <template>
-    <login :user="user" @addUser="addUser" v-if="loginPage" />
-    <template v-else>
-        <Header :user="user" v-if="user" @logout="Logout"></Header>
-        <main class="section">
-            <div class="container">
-                <div class="tile is-ancestor">
-                    <postsList :user="user" v-if="user" />
-                </div>
-            </div>
-        </main>
-    </template>
+  <LoginForm 
+    v-if="!isAuthorized" 
+    @handle-submit="handleLogin" 
+    :is-authorized="isAuthorized" 
+    :is-submitted="isSubmitted"
+    @change-name="changeName" 
+    @change-email="changeEmail" 
+  />
+  <template v-else>
+    <Header :user="user" @logout="logout" />
+    <main class="section">
+      <div class="container">
+        <div class="tile is-ancestor">
+          <PostList :user-id="user.id" />
+        </div>
+      </div>
+    </main>
+  </template>
 </template>
-<style></style>

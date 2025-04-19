@@ -1,7 +1,9 @@
-import { client } from "../utils/httpClient";
+import { client } from "../utils/fetchClients";
 
-export const loginUser = (email) => client.get(`/users`, {
-  params: { email },
-});
+export const loginUser = (email) =>
+  client.get(`/users`, {
+    params: { email },
+  });
 
-export const registerUser = (email, name) => client.post(`/users`, { email, name });
+export const registerUser = (email, name) =>
+  client.post(`/users`, { email, name });

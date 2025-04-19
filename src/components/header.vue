@@ -1,13 +1,13 @@
 <script>
 export default {
-  name: 'Header',
+  name: "Header",
   props: {
     user: {
       type: Object,
       required: true,
     },
   },
-  emits: ['logout'],
+  emits: ["logout"],
 };
 </script>
 

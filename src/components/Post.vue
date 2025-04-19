@@ -1,31 +1,31 @@
 <script>
 export default {
-  name: 'Post',
+  name: 'Article',
   props: {
-    post: {
+    item: {
       type: Object,
       required: true,
     },
-    currentPostId: {
+    activePostId: {
       type: Number,
       required: true,
     },
   },
-  emits: ['openSidebar'],
+  emits: ['toggleSidebar'],
 };
 </script>
 
 <template>
   <tr>
-    <td>{{ post.id }}</td>
-    <td>{{ post.title }}</td>
+    <td>{{ item.id }}</td>
+    <td>{{ item.title }}</td>
     <td class="has-text-right is-vcentered">
       <button
         type="button"
-        :class="['button', 'is-link', { 'is-light': post.id !== currentPostId }]"
-        @click="$emit('openSidebar', post.id)"
+        :class="['button', 'is-link', { 'is-light': item.id !== activePostId }]"
+        @click="$emit('toggleSidebar', item.id)"
       >
-        {{ post.id !== currentPostId ? 'Open' : 'Close' }}
+        {{ item.id !== activePostId ? 'Open' : 'Close' }}
       </button>
     </td>
   </tr>

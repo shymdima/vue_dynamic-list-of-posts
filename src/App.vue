@@ -10,12 +10,12 @@ export default {
     PostList,
   },
   data() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem("user"));
     return {
       isAuthorized: !!user,
       user,
-      name: '',
-      email: '',
+      name: "",
+      email: "",
       isSubmitted: false,
     };
   },
@@ -52,7 +52,7 @@ export default {
     setUser(user) {
       this.user = user;
       this.isAuthorized = true;
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
     },
     changeName(value) {
       this.name = value;
@@ -70,13 +70,13 @@ export default {
 </script>
 
 <template>
-  <LoginForm 
-    v-if="!isAuthorized" 
-    @handle-submit="handleLogin" 
-    :is-authorized="isAuthorized" 
+  <LoginForm
+    v-if="!isAuthorized"
+    @handle-submit="handleLogin"
+    :is-authorized="isAuthorized"
     :is-submitted="isSubmitted"
-    @change-name="changeName" 
-    @change-email="changeEmail" 
+    @change-name="changeName"
+    @change-email="changeEmail"
   />
   <template v-else>
     <Header :user="user" @logout="logout" />

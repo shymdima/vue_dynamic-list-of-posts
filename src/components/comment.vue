@@ -1,28 +1,27 @@
 <script>
 export default {
-  name: 'Comment',
+  name: "UserComment",
   props: {
-    comment: {
+    userComment: {
       type: Object,
       required: true,
     },
   },
-  emits: ['removeComment'],
+  emits: ["deleteComment"],
 };
 </script>
 
 <template>
-  <article :class="'message is-small'">
-    <div :class="'message-header'">
-      <a :href="`mailto:${comment.email}`">{{ comment.name }}</a>
-      <button 
-        type="button" 
-        :class="'delete is-small'" 
+  <article :class="'user-message is-small'">
+    <div :class="'user-message-header'">
+      <a :href="`mailto:${userComment.email}`">{{ userComment.name }}</a>
+      <button
+        type="button"
+        :class="'remove-btn is-small'"
         aria-label="delete"
-        @click="$emit('removeComment', comment.id)"
-      >
-      </button>
+        @click="$emit('deleteComment', userComment.id)"
+      ></button>
     </div>
-    <div :class="'message-body'">{{ comment.body }}</div>
+    <div :class="'user-message-body'">{{ userComment.body }}</div>
   </article>
 </template>

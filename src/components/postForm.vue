@@ -1,49 +1,49 @@
 <script>
 export default {
-  name: 'PostForm',
+  name: 'ArticleForm',
   props: {
-    editing: {
+    isEditing: {
       type: Boolean,
       required: true,
     },
-    post: {
+    article: {
       type: Object,
       default: () => ({}),
     },
   },
-  emits: ['closeForm', 'submitHandler'],
+  emits: ['dismissForm', 'formSubmit'],
   data() {
     return {
-      title: '',
-      body: '',
-      titleError: '',
-      bodyError: '',
+      headline: '',
+      content: '',
+      headlineError: '',
+      contentError: '',
     };
   },
   mounted() {
-    if (this.editing && this.post) {
-      this.title = this.post.title;
-      this.body = this.post.body;
+    if (this.isEditing && this.article) {
+      this.headline = this.article.title;
+      this.content = this.article.body;
     }
   },
   methods: {
-    validateForm() {
-      let isError = false;
-      this.titleError = '';
-      this.bodyError = '';
-      if (!this.title) {
-        this.titleError = 'Title is required';
-        isError = true;
+    validateInputs() {
+      let hasError = false;
+      this.headlineError = '';
+      this.contentError = '';
+      if (!this.headline) {
+        this.headlineError = 'Headline is required';
+        hasError = true;
       }
-      if (!this.body) {
-        this.bodyError = 'Body is required';
-        isError = true;
+      if (!this.content) {
+        this.contentError = 'Content is required';
+        hasError = true;
       }
-      return isError;
+      return hasError;
     },
-    submit() {
-      if (!this.validateForm()) {
-        this.$emit('submitHandler', { title: this.title, body: this.body });
+    handleFormSubmit() {
+      if (!this.validateInputs()) {
+        this.$emit('formSubmit', { title: this.headline, body: this.content });
       }
     },
   },
@@ -52,49 +52,49 @@ export default {
 
 <template>
   <section>
-    <h2>{{ editing ? 'Edit post' : 'Create new post' }}</h2>
-    <form @submit.prevent="submit">
-      <div class="field" data-cy="NameField">
-        <label class="label" for="post-title">Title</label>
+    <h2>{{ isEditing ? 'Edit Article' : 'Create New Article' }}</h2>
+    <form @submit.prevent="handleFormSubmit">
+      <div class="field" data-cy="HeadlineField">
+        <label class="label" for="article-headline">Headline</label>
         <div class="control has-icons-left has-icons-right">
           <input 
             type="text" 
-            id="post-title" 
-            placeholder="Post Title"
-            :class="{ 'is-danger': !!titleError }" 
+            id="article-headline" 
+            placeholder="Enter Headline"
+            :class="{ 'is-danger': !!headlineError }" 
             class="input" 
-            v-model="title" 
+            v-model="headline" 
           />
           <span class="icon is-small is-left">
-            <i class="fas fa-user"></i>
+            <i class="fas fa-heading"></i>
           </span>
-          <span v-if="titleError" class="icon is-small is-right has-text-danger" data-cy="ErrorIcon">
+          <span v-if="headlineError" class="icon is-small is-right has-text-danger" data-cy="ErrorIcon">
             <i class="fas fa-exclamation-triangle"></i>
           </span>
-          <p v-if="titleError" class="help is-danger" data-cy="ErrorMessage">{{ titleError }}</p>
+          <p v-if="headlineError" class="help is-danger" data-cy="ErrorMessage">{{ headlineError }}</p>
         </div>
       </div>
 
-      <div class="field" data-cy="BodyField">
-        <label class="label" for="post-body">Write post body</label>
+      <div class="field" data-cy="ContentField">
+        <label class="label" for="article-content">Content</label>
         <div class="control">
           <textarea 
-            id="post-body" 
-            placeholder="Post body" 
-            :class="{ 'is-danger': !!bodyError }"
+            id="article-content" 
+            placeholder="Write content here" 
+            :class="{ 'is-danger': !!contentError }"
             class="textarea" 
-            v-model="body"
+            v-model="content"
           ></textarea>
         </div>
-        <p v-if="bodyError" class="help is-danger" data-cy="ErrorMessage">{{ bodyError }}</p>
+        <p v-if="contentError" class="help is-danger" data-cy="ErrorMessage">{{ contentError }}</p>
       </div>
 
       <div class="field is-grouped">
         <div class="control">
-          <button type="submit" class="button is-link">{{ editing ? 'Save' : 'Create' }}</button>
+          <button type="submit" class="button is-link">{{ isEditing ? 'Update' : 'Publish' }}</button>
         </div>
         <div class="control">
-          <button type="button" class="button is-link is-light" @click="$emit('closeForm')">Cancel</button>
+          <button type="button" class="button is-link is-light" @click="$emit('dismissForm')">Cancel</button>
         </div>
       </div>
     </form>

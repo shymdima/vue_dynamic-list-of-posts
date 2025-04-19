@@ -1,9 +1,11 @@
-import { client } from "../utils/httpClient";
+import { client } from "../utils/fetchClients";
 
-export const getCommentsByPostId = (postId) => client.get(`/comments`, {
-  params: { postId },
-});
+export const getCommentsByPostId = (postId) =>
+  client.get(`/comments`, {
+    params: { postId },
+  });
 
 export const addComment = (comment) => client.post(`/comments`, comment);
 
-export const deleteComment = (commentId) => client.delete(`/comments/${commentId}`);
+export const deleteComment = (commentId) =>
+  client.delete(`/comments/${commentId}`);

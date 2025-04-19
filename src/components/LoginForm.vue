@@ -1,24 +1,24 @@
 <script>
 import RegisterField from './RegisterField.vue';
 export default {
-  name: 'LoginForm',
+  name: 'AuthForm',
   props: {
-    isAuthorized: Boolean,
-    isSubmitted: Boolean,
+    isUserAuthorized: Boolean,
+    hasFormBeenSubmitted: Boolean,
   },
-  emits: ['changeName', 'changeEmail', 'handleSubmit'],
+  emits: ['updateName', 'updateEmail', 'submitForm'],
   components: {
     RegisterField,
   },
   methods: {
-    onChangeName(value) {
-      this.$emit('changeName', value);
+    handleNameUpdate(value) {
+      this.$emit('updateName', value);
     },
-    onChangeEmail(event) {
-      this.$emit('changeEmail', event.target.value);
+    handleEmailUpdate(event) {
+      this.$emit('updateEmail', event.target.value);
     },
-    onSubmit(event) {
-      this.$emit('handleSubmit', event);
+    handleFormSubmit(event) {
+      this.$emit('submitForm', event);
     },
   },
 };
@@ -26,21 +26,21 @@ export default {
 
 <template>
   <section class="container is-flex is-justify-content-center">
-    <form @submit.prevent="onSubmit" class="box mt-5">
-      <h1 class="title is-3">{{ isSubmitted ? 'You need to register' : 'Log in' }}</h1>
+    <form @submit.prevent="handleFormSubmit" class="box mt-5">
+      <h1 class="title is-3">{{ hasFormBeenSubmitted ? 'You need to register' : 'Log in' }}</h1>
 
       <div class="field">
-        <label class="label" for="user-email">Email</label>
+        <label class="label" for="email-input">Email</label>
         <div class="control has-icons-left">
           <input
+            id="email-input"
             type="email"
-            id="user-email"
             name="email"
             class="input"
             placeholder="Enter your email"
-            @input="onChangeEmail"
+            :disabled="hasFormBeenSubmitted"
             required
-            :disabled="isSubmitted"
+            @input="handleEmailUpdate"
           />
           <span class="icon is-small is-left">
             <i class="fas fa-envelope"></i>
@@ -49,13 +49,13 @@ export default {
       </div>
 
       <RegisterField
-        v-if="!isAuthorized && isSubmitted"
-        @change-name="onChangeName"
+        v-if="!isUserAuthorized && hasFormBeenSubmitted"
+        @change-name="handleNameUpdate"
       />
 
       <div class="field">
         <button type="submit" class="button is-primary">
-          {{ isSubmitted ? 'Register' : 'Log in' }}
+          {{ hasFormBeenSubmitted ? 'Register' : 'Log in' }}
         </button>
       </div>
     </form>
